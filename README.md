@@ -1,3 +1,12 @@
+😄😄😄JUST CLICK ->DOWNLOAD->GET FILE->ENJOY😄😄😄
+
+## 🧾 InventoryApp Executable (EXE)
+If you want to **run the application directly** without building the code, download the ready-to-use **InventoryApp.exe** or **InventoryAppInstaller.exe** from this repository:  
+👉 [Download InventoryApp Executable Files](https://github.com/JafranTech/InventoryApp-Builds)
+
+The code in this repository contains only the **source files**, while the **EXE link above** provides the **compiled version** built using .NET 8 (self-contained Windows app).
+
+
 # InventoryApp
 
 A small Windows Forms inventory management demo written in C# and .NET 8.
