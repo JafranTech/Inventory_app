@@ -1,0 +1,14 @@
+C:\IT\C#\console c#\inventoryApp\bin\Debug\net8.0\InventoryApp.exe
+C:\IT\C#\console c#\inventoryApp\bin\Debug\net8.0\InventoryApp.deps.json
+C:\IT\C#\console c#\inventoryApp\bin\Debug\net8.0\InventoryApp.runtimeconfig.json
+C:\IT\C#\console c#\inventoryApp\bin\Debug\net8.0\InventoryApp.dll
+C:\IT\C#\console c#\inventoryApp\bin\Debug\net8.0\InventoryApp.pdb
+C:\IT\C#\console c#\inventoryApp\obj\Debug\net8.0\InventoryApp.GeneratedMSBuildEditorConfig.editorconfig
+C:\IT\C#\console c#\inventoryApp\obj\Debug\net8.0\InventoryApp.AssemblyInfoInputs.cache
+C:\IT\C#\console c#\inventoryApp\obj\Debug\net8.0\InventoryApp.AssemblyInfo.cs
+C:\IT\C#\console c#\inventoryApp\obj\Debug\net8.0\InventoryApp.csproj.CoreCompileInputs.cache
+C:\IT\C#\console c#\inventoryApp\obj\Debug\net8.0\InventoryApp.dll
+C:\IT\C#\console c#\inventoryApp\obj\Debug\net8.0\refint\InventoryApp.dll
+C:\IT\C#\console c#\inventoryApp\obj\Debug\net8.0\InventoryApp.pdb
+C:\IT\C#\console c#\inventoryApp\obj\Debug\net8.0\InventoryApp.genruntimeconfig.cache
+C:\IT\C#\console c#\inventoryApp\obj\Debug\net8.0\ref\InventoryApp.dll

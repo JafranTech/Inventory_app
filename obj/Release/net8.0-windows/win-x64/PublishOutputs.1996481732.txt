@@ -1,0 +1,2 @@
+C:\IT\C#\console c#\InventoryApp\publish\win-x64\InventoryApp.pdb
+C:\IT\C#\console c#\InventoryApp\publish\win-x64\InventoryApp.exe
