@@ -14,3 +14,4 @@ C:\IT\C#\console c#\InventoryApp\obj\Debug\net8.0-windows\refint\InventoryApp.dl
 C:\IT\C#\console c#\InventoryApp\obj\Debug\net8.0-windows\InventoryApp.pdb
 C:\IT\C#\console c#\InventoryApp\obj\Debug\net8.0-windows\InventoryApp.genruntimeconfig.cache
 C:\IT\C#\console c#\InventoryApp\obj\Debug\net8.0-windows\ref\InventoryApp.dll
+C:\IT\C#\console c#\InventoryApp\obj\Debug\net8.0-windows\InventoryApp.sourcelink.json

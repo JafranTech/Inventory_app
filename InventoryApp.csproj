@@ -8,4 +8,14 @@
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
+  
+  <ItemGroup>
+      <Compile Update="UserControls\*.cs">
+        <SubType>UserControl</SubType>
+      </Compile>
+      <Compile Update="Forms\MainForm.cs">
+        <SubType>Form</SubType>
+      </Compile>
+  </ItemGroup>
+
 </Project>

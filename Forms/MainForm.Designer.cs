@@ -1,242 +1,198 @@
-using System.Windows.Forms;
+using System;
 using System.Drawing;
+using System.Windows.Forms;
 
 namespace InventoryApp.Forms
 {
     partial class MainForm
     {
-        private Label lblTitle;
-        private TextBox txtName;
-        private TextBox txtQty;
-        private TextBox txtPrice;
-        private Button btnAdd;
-        private ListBox lstProducts;
-        private TextBox txtActionQty;
-        private Button btnUpdateStock;
-        private Button btnRestock;
-        private Button btnView;
-        private Button btnLowStock;
-        private Button btnForecast;
-        private TextBox txtOutput;
-    private Button btnClearOutput;
-    private Button btnResetData;
-    private CheckBox chkDarkMode;
-        private Label lblName;
-        private Label lblQty;
-        private Label lblPrice;
-        private Label lblProducts;
-        private Label lblActionQty;
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
 
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            
+            // Initialize controls
+            this.topPanel = new Panel();
+            this.sidebarPanel = new Panel();
+            this.mainPanel = new Panel();
+            this.contentPanel = new Panel();
+            this.sidebarButtonsPanel = new FlowLayoutPanel();
+            this.btnToggleSidebar = new Button();
             this.lblTitle = new Label();
-            this.txtName = new TextBox();
-            this.txtQty = new TextBox();
-            this.txtPrice = new TextBox();
-            this.btnAdd = new Button();
-            this.lstProducts = new ListBox();
-            this.txtActionQty = new TextBox();
-            this.btnUpdateStock = new Button();
-            this.btnRestock = new Button();
-            this.btnView = new Button();
+            this.btnDashboard = new Button();
+            this.btnAddProduct = new Button();
+            this.btnViewProducts = new Button();
             this.btnLowStock = new Button();
-            this.btnForecast = new Button();
-            this.txtOutput = new TextBox();
-            this.lblName = new Label();
-            this.lblQty = new Label();
-            this.lblPrice = new Label();
-            this.lblProducts = new Label();
-            this.lblActionQty = new Label();
+            this.btnSoldProducts = new Button();
+            this.btnClearRestart = new Button();
+            this.lblUpdated = new Label();
+
             this.SuspendLayout();
-            // 
-            // MainForm
-            // 
-            this.ClientSize = new Size(960, 600);
-            this.Text = "Inventory Management";
+
+            // Configure main form
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
+            this.AutoScaleMode = AutoScaleMode.Font;
+            this.ClientSize = new Size(1200, 800);
             this.StartPosition = FormStartPosition.CenterScreen;
+            this.Text = "Inventory Management System";
+            this.Name = "MainForm";
 
-            // 
-            // lblTitle
-            // 
+            // Configure top panel
+            this.topPanel.Dock = DockStyle.Top;
+            this.topPanel.Height = 60;
+            this.topPanel.BackColor = Color.FromArgb(30, 30, 30);
+
+            // Configure sidebar panel
+            this.sidebarPanel.Dock = DockStyle.Left;
+            this.sidebarPanel.Width = 250;
+            this.sidebarPanel.BackColor = Color.FromArgb(45, 45, 48);
+
+            // Configure main panel
+            this.mainPanel.Dock = DockStyle.Fill;
+            this.mainPanel.BackColor = Color.FromArgb(37, 37, 38);
+
+            // Configure content panel
+            this.contentPanel.Dock = DockStyle.Fill;
+            this.contentPanel.Padding = new Padding(20);
+
+            // Configure sidebar buttons panel
+            this.sidebarButtonsPanel.Dock = DockStyle.Top;
+            this.sidebarButtonsPanel.AutoSize = true;
+            this.sidebarButtonsPanel.FlowDirection = FlowDirection.TopDown;
+            this.sidebarButtonsPanel.WrapContents = false;
+            this.sidebarButtonsPanel.Padding = new Padding(10);
+
+            // Configure toggle button
+            this.btnToggleSidebar.Size = new Size(32, 32);
+            this.btnToggleSidebar.Location = new Point(10, 14);
+            this.btnToggleSidebar.FlatStyle = FlatStyle.Flat;
+            this.btnToggleSidebar.FlatAppearance.BorderSize = 0;
+            this.btnToggleSidebar.Text = "☰";
+            this.btnToggleSidebar.ForeColor = Color.White;
+            this.btnToggleSidebar.BackColor = Color.Transparent;
+            this.btnToggleSidebar.Cursor = Cursors.Hand;
+
+            // Configure title
+            this.lblTitle.Text = "Inventory Management System";
+            this.lblTitle.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            this.lblTitle.ForeColor = Color.White;
             this.lblTitle.AutoSize = true;
-            this.lblTitle.Font = new Font("Segoe UI", 14F, FontStyle.Bold, GraphicsUnit.Point);
-            this.lblTitle.Location = new Point(20, 15);
-            this.lblTitle.Text = "Inventory Management";
+            this.lblTitle.Location = new Point(50, 15);
 
-            // 
-            // chkDarkMode
-            // 
-            this.chkDarkMode = new CheckBox();
-            this.chkDarkMode.Location = new Point(820, 20);
-            this.chkDarkMode.Size = new Size(110, 24);
-            this.chkDarkMode.Text = "Dark Mode";
-            this.chkDarkMode.CheckedChanged += new System.EventHandler(this.chkDarkMode_CheckedChanged);
-
-            // 
-            // lblName
-            // 
-            this.lblName.Location = new Point(20, 60);
-            this.lblName.AutoSize = true;
-            this.lblName.Text = "Name";
-
-            // 
-            // txtName
-            // 
-            this.txtName.Location = new Point(90, 58);
-            this.txtName.Size = new Size(180, 23);
-
-            // 
-            // lblQty
-            // 
-            this.lblQty.Location = new Point(290, 60);
-            this.lblQty.AutoSize = true;
-            this.lblQty.Text = "Qty";
-
-            // 
-            // txtQty
-            // 
-            this.txtQty.Location = new Point(330, 58);
-            this.txtQty.Size = new Size(80, 23);
-
-            // 
-            // lblPrice
-            // 
-            this.lblPrice.Location = new Point(430, 60);
-            this.lblPrice.AutoSize = true;
-            this.lblPrice.Text = "Price";
-
-            // 
-            // txtPrice
-            // 
-            this.txtPrice.Location = new Point(480, 58);
-            this.txtPrice.Size = new Size(100, 23);
-
-            // 
-            // btnAdd
-            // 
-            this.btnAdd.Location = new Point(600, 57);
-            this.btnAdd.Size = new Size(100, 27);
-            this.btnAdd.Text = "Add Product";
-            this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
-
-            // 
-            // lblProducts
-            // 
-            this.lblProducts.Location = new Point(20, 100);
-            this.lblProducts.AutoSize = true;
-            this.lblProducts.Text = "Products";
-
-            // 
-            // lstProducts
-            // 
-            this.lstProducts.Location = new Point(20, 120);
-            this.lstProducts.Size = new Size(380, 300);
-
-            // 
-            // lblActionQty
-            // 
-            this.lblActionQty.Location = new Point(20, 430);
-            this.lblActionQty.AutoSize = true;
-            this.lblActionQty.Text = "Quantity";
-
-            // 
-            // txtActionQty
-            // 
-            this.txtActionQty.Location = new Point(90, 428);
-            this.txtActionQty.Size = new Size(100, 23);
-
-            // 
-            // btnUpdateStock
-            // 
-            this.btnUpdateStock.Location = new Point(210, 427);
-            this.btnUpdateStock.Size = new Size(90, 27);
-            this.btnUpdateStock.Text = "Sell";
-            this.btnUpdateStock.Click += new System.EventHandler(this.btnUpdateStock_Click);
-
-            // 
-            // btnRestock
-            // 
-            this.btnRestock.Location = new Point(310, 427);
-            this.btnRestock.Size = new Size(90, 27);
-            this.btnRestock.Text = "Restock";
-            this.btnRestock.Click += new System.EventHandler(this.btnRestock_Click);
-
-            // 
-            // btnView
-            // 
-            this.btnView.Location = new Point(420, 120);
-            this.btnView.Size = new Size(120, 30);
-            this.btnView.Text = "View Inventory";
-            this.btnView.Click += new System.EventHandler(this.btnView_Click);
-
-            // 
-            // btnLowStock
-            // 
-            this.btnLowStock.Location = new Point(420, 160);
-            this.btnLowStock.Size = new Size(120, 30);
+            // Configure menu buttons
+            this.btnDashboard.Text = "Dashboard";
+            this.btnAddProduct.Text = "Add Product";
+            this.btnViewProducts.Text = "View Products";
             this.btnLowStock.Text = "Low Stock";
-            this.btnLowStock.Click += new System.EventHandler(this.btnLowStock_Click);
+            this.btnSoldProducts.Text = "Sold Products";
+            this.btnClearRestart.Text = "Clear / Restart";
 
-            // 
-            // btnForecast
-            // 
-            this.btnForecast.Location = new Point(420, 200);
-            this.btnForecast.Size = new Size(120, 30);
-            this.btnForecast.Text = "Forecast";
-            this.btnForecast.Click += new System.EventHandler(this.btnForecast_Click);
+            foreach (Control control in new Control[] {
+                this.btnDashboard,
+                this.btnAddProduct,
+                this.btnViewProducts,
+                this.btnLowStock,
+                this.btnSoldProducts,
+                this.btnClearRestart
+            })
+            {
+                if (control is Button button)
+                {
+                    button.Width = 200;
+                    button.Height = 40;
+                    button.FlatStyle = FlatStyle.Flat;
+                    button.FlatAppearance.BorderSize = 0;
+                    button.ForeColor = Color.White;
+                    button.BackColor = Color.FromArgb(45, 45, 48);
+                    button.TextAlign = ContentAlignment.MiddleLeft;
+                    button.Margin = new Padding(10, 5, 10, 5);
+                    button.Cursor = Cursors.Hand;
+                }
+            }
 
-            // 
-            // txtOutput
-            // 
-            this.txtOutput.Location = new Point(560, 120);
-            this.txtOutput.Multiline = true;
-            this.txtOutput.ScrollBars = ScrollBars.Vertical;
-            this.txtOutput.ReadOnly = true;
-            this.txtOutput.Size = new Size(370, 390);
+            // Configure updated label
+            this.lblUpdated.Text = "Updated: N/A";
+            this.lblUpdated.ForeColor = Color.LightGray;
+            this.lblUpdated.AutoSize = true;
+            this.lblUpdated.Location = new Point(topPanel.Width - 300, 20);
+            this.lblUpdated.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
-            // 
-            // btnClearOutput
-            // 
-            this.btnClearOutput = new Button();
-            this.btnClearOutput.Location = new Point(560, 520);
-            this.btnClearOutput.Size = new Size(120, 27);
-            this.btnClearOutput.Text = "Clear Output";
-            this.btnClearOutput.Click += new System.EventHandler(this.btnClearOutput_Click);
+            // Configure open folder button
+            this.btnOpenFolder = new Button();
+            this.btnOpenFolder.Size = new Size(32, 32);
+            this.btnOpenFolder.Location = new Point(topPanel.Width - 40, 14);
+            this.btnOpenFolder.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            this.btnOpenFolder.FlatStyle = FlatStyle.Flat;
+            this.btnOpenFolder.FlatAppearance.BorderSize = 0;
+            this.btnOpenFolder.Text = "📂";
+            this.btnOpenFolder.ForeColor = Color.LightGray;
+            this.btnOpenFolder.BackColor = Color.Transparent;
+            this.btnOpenFolder.Cursor = Cursors.Hand;
+            this.btnOpenFolder.Click += btnOpenFolder_Click;
 
-            // 
-            // btnResetData
-            // 
-            this.btnResetData = new Button();
-            this.btnResetData.Location = new Point(700, 520);
-            this.btnResetData.Size = new Size(120, 27);
-            this.btnResetData.Text = "Reset Data";
-            this.btnResetData.Click += new System.EventHandler(this.btnResetData_Click);
+            // Add controls to panels
+            this.topPanel.Controls.Add(this.btnToggleSidebar);
+            this.topPanel.Controls.Add(this.lblTitle);
+            this.topPanel.Controls.Add(this.lblUpdated);
+            this.topPanel.Controls.Add(this.btnOpenFolder);
 
-            // add controls
-            this.Controls.Add(this.lblTitle);
-            this.Controls.Add(this.lblName);
-            this.Controls.Add(this.txtName);
-            this.Controls.Add(this.lblQty);
-            this.Controls.Add(this.txtQty);
-            this.Controls.Add(this.lblPrice);
-            this.Controls.Add(this.txtPrice);
-            this.Controls.Add(this.btnAdd);
-            this.Controls.Add(this.lblProducts);
-            this.Controls.Add(this.lstProducts);
-            this.Controls.Add(this.lblActionQty);
-            this.Controls.Add(this.txtActionQty);
-            this.Controls.Add(this.btnUpdateStock);
-            this.Controls.Add(this.btnRestock);
-            this.Controls.Add(this.btnView);
-            this.Controls.Add(this.btnLowStock);
-            this.Controls.Add(this.btnForecast);
-            this.Controls.Add(this.txtOutput);
-            this.Controls.Add(this.btnClearOutput);
-            this.Controls.Add(this.btnResetData);
-            this.Controls.Add(this.chkDarkMode);
+            this.sidebarButtonsPanel.Controls.AddRange(new Control[] {
+                this.btnDashboard,
+                this.btnAddProduct,
+                this.btnViewProducts,
+                this.btnLowStock,
+                this.btnSoldProducts,
+                this.btnClearRestart
+            });
+
+            this.sidebarPanel.Controls.Add(this.sidebarButtonsPanel);
+            this.mainPanel.Controls.Add(this.contentPanel);
+
+            // Add panels to form
+            this.Controls.Add(this.mainPanel);
+            this.Controls.Add(this.sidebarPanel);
+            this.Controls.Add(this.topPanel);
 
             this.ResumeLayout(false);
-            this.PerformLayout();
         }
+
+        #endregion
+
+        #region Designer Fields
+    private Panel topPanel;
+    private Panel sidebarPanel;
+    private Panel mainPanel;
+    private Panel contentPanel;
+    private FlowLayoutPanel sidebarButtonsPanel;
+    private Button btnToggleSidebar;
+    private Label lblTitle;
+    private Button btnDashboard;
+    private Button btnAddProduct;
+    private Button btnViewProducts;
+    private Button btnLowStock;
+    private Button btnSoldProducts;
+    private Button btnClearRestart;
+    private Label lblUpdated;
+    private Button btnOpenFolder;
+        #endregion
     }
 }

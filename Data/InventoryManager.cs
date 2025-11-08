@@ -2,26 +2,72 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using InventoryApp.Models;
+using InventoryApp.Services;
 
 namespace InventoryApp.Data
 {
     public class InventoryManager
     {
         private List<Product> products = new List<Product>();
+        private List<string> categories = new List<string>() { "General" };
         private const int LOW_STOCK_THRESHOLD = 5;
         private readonly Action<string> _write;
+        private readonly CsvDataService _csvService;
 
         public InventoryManager() : this(Console.WriteLine) { }
 
         public InventoryManager(Action<string> write)
         {
             _write = write ?? Console.WriteLine;
+            _csvService = new CsvDataService();
+            // Load existing data from CSVs
+            var loaded = _csvService.LoadProducts();
+            if (loaded != null && loaded.Count > 0)
+            {
+                products = loaded.ToList();
+                // collect categories
+                foreach (var p in products)
+                {
+                    if (!string.IsNullOrWhiteSpace(p.Category) && !categories.Contains(p.Category))
+                        categories.Add(p.Category);
+                }
+            }
+            // Load sales and populate PastSales counts
+            var sales = _csvService.LoadSales();
+            foreach (var s in sales)
+            {
+                var prod = products.FirstOrDefault(p => p.Id == s.ProductId);
+                if (prod != null)
+                {
+                    prod.PastSales.Add(s.QuantitySold);
+                }
+            }
         }
 
-        public void AddProduct(string name, int qty, double price)
+        public void AddProduct(string name, int qty, decimal price, string? category = null)
         {
-            products.Add(new Product(name, qty, price));
+            var id = products.Count > 0 ? products.Max(p => p.Id) + 1 : 1;
+            var cat = string.IsNullOrWhiteSpace(category) ? "General" : category;
+            if (!categories.Contains(cat))
+                categories.Add(cat);
+            var prod = new Product(id, name, cat, qty, price);
+            products.Add(prod);
+            // persist
+            _csvService.SaveProducts(products);
             _write($"✅ Product '{name}' added successfully!\n");
+        }
+
+        // Category helpers
+        public IReadOnlyList<string> GetCategories() => categories.AsReadOnly();
+
+        public void AddCategory(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return;
+            if (!categories.Contains(name))
+            {
+                categories.Add(name);
+                _write($"✅ Category '{name}' added.");
+            }
         }
 
         // --- Update stock (Sale) ---
@@ -63,6 +109,12 @@ namespace InventoryApp.Data
             }
             product.PastSales.Add(soldQty);
             product.Quantity -= soldQty;
+            // log sale
+            var saleId = _csvService.LoadSales().Count + 1;
+            var sale = new Models.Sale(saleId, product.Id, product.Name, soldQty, soldQty * product.Price);
+            _csvService.SaveSale(sale);
+            // persist products and lowstock
+            _csvService.SaveProducts(products);
             _write($"📦 Updated '{product.Name}' stock. Remaining: {product.Quantity}");
         }
 
@@ -99,6 +151,8 @@ namespace InventoryApp.Data
             }
             var product = products[index];
             product.Quantity += addQty;
+            // persist
+            _csvService.SaveProducts(products);
             _write($"✅ Added {addQty} units to '{product.Name}'. New stock: {product.Quantity}");
         }
 
