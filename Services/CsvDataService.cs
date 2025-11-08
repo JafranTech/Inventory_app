@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+    using System.Threading;
 using InventoryApp.Models;
 
 namespace InventoryApp.Services
@@ -49,14 +50,37 @@ namespace InventoryApp.Services
         public List<Product> LoadProducts()
         {
             var products = new List<Product>();
-            var lines = File.ReadAllLines(_productsFile).Skip(1); // Skip header
-            foreach (var line in lines)
+            // Attempt to read the products file with a small retry loop and shared read access
+            const int maxAttempts = 5;
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
             {
-                if (!string.IsNullOrWhiteSpace(line))
+                try
                 {
-                    products.Add(Product.FromCsvRow(line));
+                    using (var fs = new FileStream(_productsFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    using (var sr = new StreamReader(fs))
+                    {
+                        // Read header line first
+                        var header = sr.ReadLine();
+                        while (!sr.EndOfStream)
+                        {
+                            var line = sr.ReadLine();
+                            if (!string.IsNullOrWhiteSpace(line))
+                            {
+                                products.Add(Product.FromCsvRow(line));
+                            }
+                        }
+                    }
+                    break; // success
+                }
+                catch (IOException)
+                {
+                    // If last attempt, rethrow so caller sees the problem; otherwise wait and retry
+                    if (attempt == maxAttempts)
+                        throw;
+                    Thread.Sleep(200);
                 }
             }
+
             return products;
         }
 
