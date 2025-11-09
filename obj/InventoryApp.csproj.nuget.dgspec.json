@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\IT\\C#\\console c#\\InventoryApp\\InventoryApp.csproj": {}
+    "C:\\IT\\C#\\console c#\\InventoryApp\\InventoryApp.csproj": {}
   },
   "projects": {
-    "c:\\IT\\C#\\console c#\\InventoryApp\\InventoryApp.csproj": {
+    "C:\\IT\\C#\\console c#\\InventoryApp\\InventoryApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\IT\\C#\\console c#\\InventoryApp\\InventoryApp.csproj",
+        "projectUniqueName": "C:\\IT\\C#\\console c#\\InventoryApp\\InventoryApp.csproj",
         "projectName": "InventoryApp",
-        "projectPath": "c:\\IT\\C#\\console c#\\InventoryApp\\InventoryApp.csproj",
+        "projectPath": "C:\\IT\\C#\\console c#\\InventoryApp\\InventoryApp.csproj",
         "packagesPath": "C:\\Users\\moham\\.nuget\\packages\\",
-        "outputPath": "c:\\IT\\C#\\console c#\\InventoryApp\\obj\\",
+        "outputPath": "C:\\IT\\C#\\console c#\\InventoryApp\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\moham\\AppData\\Roaming\\NuGet\\NuGet.Config",
