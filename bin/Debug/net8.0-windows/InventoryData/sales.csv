@@ -1,1 +1,5 @@
 Id,ProductId,ProductName,QuantitySold,TotalPrice,SaleDate
+1,1,iphone,25,250000,2025-11-10 10:31:51
+2,2,Samsung Galaxy S23,50,16409.00,2025-11-10 10:32:25
+3,4,Google Pixel 8,14,29712.2,2025-11-10 10:32:31
+4,4,Google Pixel 8,10,21223.0,2025-11-10 10:32:41

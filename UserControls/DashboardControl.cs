@@ -82,6 +82,8 @@ namespace InventoryApp.UserControls
             this.Controls.Add(lblLastUpdated);
 
             // Load initial data
+            // Subscribe to inventory updates so dashboard refreshes automatically
+            _inventoryManager.InventoryUpdated += RefreshDashboard;
             RefreshDashboard();
         }
 
@@ -102,7 +104,7 @@ namespace InventoryApp.UserControls
         public void RefreshDashboard()
         {
             var products = _inventoryManager.GetProducts();
-            int lowStockCount = products.Count(p => p.Quantity < 5); // Using LOW_STOCK_THRESHOLD from InventoryManager
+            int lowStockCount = products.Count(p => p.Quantity < InventoryManager.LOW_STOCK_THRESHOLD);
             int totalTransactions = products.Sum(p => p.PastSales.Count);
 
             lblTotalProducts.Text = $"Total Products\n{products.Count}";

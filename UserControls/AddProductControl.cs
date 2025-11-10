@@ -3,6 +3,8 @@ using System.Windows.Forms;
 using System.Drawing;
 using InventoryApp.Services;
 using InventoryApp.Models;
+using System.Globalization;
+using Microsoft.VisualBasic.FileIO;
 
 namespace InventoryApp.UserControls
 {
@@ -201,73 +203,128 @@ namespace InventoryApp.UserControls
                 Title = "Select Products CSV File"
             };
 
-            if (dialog.ShowDialog() == DialogResult.OK)
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            var file = dialog.FileName;
+            var main = this.FindForm() as InventoryApp.Forms.MainForm;
+            int success = 0, errors = 0;
+            var errorSamples = new List<string>();
+
+            try
             {
-                try
+                using (var parser = new TextFieldParser(file))
                 {
-                    var lines = File.ReadAllLines(dialog.FileName);
-                    if (lines.Length < 2) // Need at least header + 1 data row
+                    parser.TextFieldType = FieldType.Delimited;
+                    parser.SetDelimiters(",");
+                    parser.HasFieldsEnclosedInQuotes = true;
+
+                    if (parser.EndOfData)
                     {
-                        MessageBox.Show("The CSV file is empty or invalid.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("The CSV file is empty.", "Import Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
 
-                    // Verify header format
-                    var header = lines[0].ToLower();
-                    if (!header.Contains("name") || !header.Contains("quantity") || !header.Contains("price"))
+                    string[]? headers = parser.ReadFields();
+                    if (headers == null)
                     {
-                        MessageBox.Show("The CSV file must have Name, Quantity, and Price columns.", "Invalid Format", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Invalid CSV header.", "Import Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
 
-                    var main = this.FindForm() as InventoryApp.Forms.MainForm;
-                    var success = 0;
-                    var errors = 0;
-
-                    // Start from row 1 (skip header)
-                    for (int i = 1; i < lines.Length; i++)
+                    // Map header indices (case-insensitive)
+                    int idxName = -1, idxCategory = -1, idxQty = -1, idxPrice = -1;
+                    for (int i = 0; i < headers.Length; i++)
                     {
-                        var line = lines[i].Trim();
-                        if (string.IsNullOrEmpty(line)) continue;
+                        var h = headers[i].Trim().ToLowerInvariant();
+                        if (h.Contains("name") || h.Contains("product") || h.Contains("title")) idxName = i;
+                        else if (h.Contains("category") || h.Contains("cat")) idxCategory = i;
+                        else if (h.Contains("quantity") || h.Contains("qty") || h.Contains("amount")) idxQty = i;
+                        else if (h.Contains("price") || h.Contains("cost")) idxPrice = i;
+                    }
 
-                        var parts = line.Split(',');
-                        if (parts.Length >= 4)
+                    if (idxName == -1 || idxQty == -1 || idxPrice == -1)
+                    {
+                        MessageBox.Show("CSV must contain at least Name, Quantity and Price columns (header names can vary).",
+                            "Invalid CSV", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    while (!parser.EndOfData)
+                    {
+                        try
                         {
-                            try
+                            var fields = parser.ReadFields();
+                            if (fields == null) continue;
+
+                            var name = idxName < fields.Length ? fields[idxName].Trim() : string.Empty;
+                            var category = (idxCategory >= 0 && idxCategory < fields.Length) ? fields[idxCategory].Trim() : string.Empty;
+                            var qtyStr = idxQty < fields.Length ? fields[idxQty].Trim() : string.Empty;
+                            var priceStr = idxPrice < fields.Length ? fields[idxPrice].Trim() : string.Empty;
+
+                            if (string.IsNullOrWhiteSpace(name))
                             {
-                                var name = parts[0].Trim();
-                                var category = parts[1].Trim();
-                                if (int.TryParse(parts[2], out int qty) && decimal.TryParse(parts[3], out decimal price))
-                                {
-                                    if (main != null)
-                                    {
-                                        main.AddProductViaManager(name, qty, price, category);
-                                        success++;
-                                    }
-                                }
-                                else
-                                {
-                                    errors++;
-                                }
+                                errors++; if (errorSamples.Count < 5) errorSamples.Add("Empty name");
+                                continue;
                             }
-                            catch
+
+                            if (!int.TryParse(qtyStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out int qty))
                             {
-                                errors++;
+                                // Try current culture
+                                int.TryParse(qtyStr, NumberStyles.Integer, CultureInfo.CurrentCulture, out qty);
                             }
+
+                            if (!decimal.TryParse(priceStr, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal price))
+                            {
+                                decimal.TryParse(priceStr, NumberStyles.Number, CultureInfo.CurrentCulture, out price);
+                            }
+
+                            if (qty < 0 || price < 0)
+                            {
+                                errors++; if (errorSamples.Count < 5) errorSamples.Add($"Invalid qty/price for '{name}'");
+                                continue;
+                            }
+
+                            // Add via main form manager if present, otherwise write directly
+                            if (main != null)
+                            {
+                                main.AddProductViaManager(name, qty, price, category);
+                            }
+                            else
+                            {
+                                var products = _dataService.LoadProducts();
+                                var newId = products.Count > 0 ? products.Max(p => p.Id) + 1 : 1;
+                                var product = new Product(newId, name, category, qty, price);
+                                products.Add(product);
+                                _dataService.SaveProducts(products);
+                            }
+
+                            success++;
+                        }
+                        catch (MalformedLineException)
+                        {
+                            errors++; if (errorSamples.Count < 5) errorSamples.Add("Malformed line");
                         }
                     }
-
-                    string message = $"Import complete:\n{success} products imported successfully";
-                    if (errors > 0)
-                        message += $"\n{errors} products failed";
-
-                    MessageBox.Show(message, "Import Results", MessageBoxButtons.OK, 
-                        errors > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
                 }
-                catch (Exception ex)
+
+                var msg = $"Import complete:\n{success} products imported successfully";
+                if (errors > 0)
                 {
-                    MessageBox.Show($"Error reading CSV file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    msg += $"\n{errors} products failed.";
+                    if (errorSamples.Count > 0)
+                    {
+                        msg += "\nExamples: \n" + string.Join("; ", errorSamples);
+                    }
+                    MessageBox.Show(msg, "Import Results", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
+                else
+                {
+                    MessageBox.Show(msg, "Import Results", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error importing CSV: {ex.Message}", "Import Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

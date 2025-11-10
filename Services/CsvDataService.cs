@@ -86,17 +86,46 @@ namespace InventoryApp.Services
 
         public void SaveProducts(List<Product> products)
         {
-            var lines = new List<string> { Product.CsvHeader };
-            lines.AddRange(products.Select(p => p.ToCsvRow()));
-            File.WriteAllLines(_productsFile, lines);
+            const int maxAttempts = 5;
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                try
+                {
+                    var lines = new List<string> { Product.CsvHeader };
+                    lines.AddRange(products.Select(p => p.ToCsvRow()));
+                    
+                    // Write with FileShare.ReadWrite to allow other processes to read
+                    using (var fs = new FileStream(_productsFile, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                    using (var sw = new StreamWriter(fs))
+                    {
+                        foreach (var line in lines)
+                        {
+                            sw.WriteLine(line);
+                        }
+                    }
 
-            // Update low stock file
-            var lowStockProducts = products.Where(p => p.IsLowStock).ToList();
-            lines = new List<string> { Product.CsvHeader };
-            lines.AddRange(lowStockProducts.Select(p => p.ToCsvRow()));
-            File.WriteAllLines(_lowStockFile, lines);
-            
-            OnCsvUpdated?.Invoke();
+                    // Update low stock file
+                    var lowStockProducts = products.Where(p => p.IsLowStock).ToList();
+                    lines = new List<string> { Product.CsvHeader };
+                    lines.AddRange(lowStockProducts.Select(p => p.ToCsvRow()));
+                    
+                    using (var fs = new FileStream(_lowStockFile, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                    using (var sw = new StreamWriter(fs))
+                    {
+                        foreach (var line in lines)
+                        {
+                            sw.WriteLine(line);
+                        }
+                    }
+                    
+                    OnCsvUpdated?.Invoke();
+                    break;
+                }
+                catch (IOException) when (attempt < maxAttempts)
+                {
+                    Thread.Sleep(200 * attempt); // Exponential backoff
+                }
+            }
         }
 
         // Sales
@@ -116,13 +145,33 @@ namespace InventoryApp.Services
 
         public void SaveSale(Sale sale)
         {
-            var sales = LoadSales();
-            sales.Add(sale);
-            var lines = new List<string> { Sale.CsvHeader };
-            lines.AddRange(sales.Select(s => s.ToCsvRow()));
-            File.WriteAllLines(_salesFile, lines);
-            
-            OnCsvUpdated?.Invoke();
+            const int maxAttempts = 5;
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                try
+                {
+                    var sales = LoadSales();
+                    sales.Add(sale);
+                    var lines = new List<string> { Sale.CsvHeader };
+                    lines.AddRange(sales.Select(s => s.ToCsvRow()));
+
+                    using (var fs = new FileStream(_salesFile, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                    using (var sw = new StreamWriter(fs))
+                    {
+                        foreach (var line in lines)
+                        {
+                            sw.WriteLine(line);
+                        }
+                    }
+                    
+                    OnCsvUpdated?.Invoke();
+                    break;
+                }
+                catch (IOException) when (attempt < maxAttempts)
+                {
+                    Thread.Sleep(200 * attempt); // Exponential backoff
+                }
+            }
         }
 
         // Clear all data

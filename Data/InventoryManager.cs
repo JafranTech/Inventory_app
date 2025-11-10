@@ -10,9 +10,11 @@ namespace InventoryApp.Data
     {
         private List<Product> products = new List<Product>();
         private List<string> categories = new List<string>() { "General" };
-        private const int LOW_STOCK_THRESHOLD = 5;
+        public static readonly int LOW_STOCK_THRESHOLD = 10;
         private readonly Action<string> _write;
         private readonly CsvDataService _csvService;
+    // Event to notify UI when inventory or sales change
+    public event Action? InventoryUpdated;
 
         public InventoryManager() : this(Console.WriteLine) { }
 
@@ -20,6 +22,8 @@ namespace InventoryApp.Data
         {
             _write = write ?? Console.WriteLine;
             _csvService = new CsvDataService();
+            // subscribe to CSV updates so we refresh in-memory state
+            _csvService.OnCsvUpdated += ReloadFromCsv;
             // Load existing data from CSVs
             var loaded = _csvService.LoadProducts();
             if (loaded != null && loaded.Count > 0)
@@ -44,6 +48,32 @@ namespace InventoryApp.Data
             }
         }
 
+        public void ReloadFromCsv()
+        {
+            var loaded = _csvService.LoadProducts();
+            products = loaded ?? new List<Product>();
+
+            // refresh categories
+            categories = new List<string>() { "General" };
+            foreach (var p in products)
+            {
+                if (!string.IsNullOrWhiteSpace(p.Category) && !categories.Contains(p.Category))
+                    categories.Add(p.Category);
+            }
+
+            // reload sales into PastSales
+            var sales = _csvService.LoadSales();
+            foreach (var p in products)
+                p.PastSales.Clear();
+            foreach (var s in sales)
+            {
+                var prod = products.FirstOrDefault(p => p.Id == s.ProductId);
+                if (prod != null) prod.PastSales.Add(s.QuantitySold);
+            }
+
+            InventoryUpdated?.Invoke();
+        }
+
         public void AddProduct(string name, int qty, decimal price, string? category = null)
         {
             var id = products.Count > 0 ? products.Max(p => p.Id) + 1 : 1;
@@ -55,6 +85,7 @@ namespace InventoryApp.Data
             // persist
             _csvService.SaveProducts(products);
             _write($"✅ Product '{name}' added successfully!\n");
+            InventoryUpdated?.Invoke();
         }
 
         // Category helpers
@@ -89,33 +120,57 @@ namespace InventoryApp.Data
         }
 
         // Non-interactive overload for UI usage (index is zero-based)
-        public void UpdateStock(int index, int soldQty)
+        public bool UpdateStock(int index, int soldQty)
         {
             if (index < 0 || index >= products.Count)
             {
                 _write("❌ Invalid product selection!");
-                return;
+                return false;
             }
             var product = products[index];
             if (soldQty < 0)
             {
                 _write("❌ Invalid quantity!");
-                return;
+                return false;
             }
             if (soldQty > product.Quantity)
             {
                 _write("⚠️ Not enough stock available!");
-                return;
+                return false;
             }
+            var currentQty = product.Quantity;
+            if (currentQty < soldQty)
+            {
+                _write("⚠️ Not enough stock available!");
+                return false;
+            }
+            
+            // Update in memory first
+            product.Quantity = currentQty - soldQty;
             product.PastSales.Add(soldQty);
-            product.Quantity -= soldQty;
-            // log sale
-            var saleId = _csvService.LoadSales().Count + 1;
-            var sale = new Models.Sale(saleId, product.Id, product.Name, soldQty, soldQty * product.Price);
-            _csvService.SaveSale(sale);
-            // persist products and lowstock
-            _csvService.SaveProducts(products);
-            _write($"📦 Updated '{product.Name}' stock. Remaining: {product.Quantity}");
+            
+            try
+            {
+                // Save changes to CSV
+                _csvService.SaveProducts(products);
+                
+                // Log the sale
+                var saleId = _csvService.LoadSales().Count + 1;
+                var sale = new Models.Sale(saleId, product.Id, product.Name, soldQty, soldQty * product.Price);
+                _csvService.SaveSale(sale);
+                
+                _write($"📦 Updated '{product.Name}' stock. Remaining: {product.Quantity}");
+                InventoryUpdated?.Invoke();
+                return true;
+            }
+            catch (Exception)
+            {
+                // Rollback the in-memory change if save fails
+                product.Quantity = currentQty;
+                product.PastSales.RemoveAt(product.PastSales.Count - 1);
+                _write("❌ Failed to save the changes!");
+                return false;
+            }
         }
 
         // --- Restock (Add Quantity) ---
@@ -154,6 +209,13 @@ namespace InventoryApp.Data
             // persist
             _csvService.SaveProducts(products);
             _write($"✅ Added {addQty} units to '{product.Name}'. New stock: {product.Quantity}");
+            InventoryUpdated?.Invoke();
+        }
+
+        // Expose sales for UI
+        public IReadOnlyList<Models.Sale> GetSales()
+        {
+            return _csvService.LoadSales().AsReadOnly();
         }
 
         // --- Display All Products ---

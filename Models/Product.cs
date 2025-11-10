@@ -12,7 +12,7 @@ namespace InventoryApp.Models
         public int Quantity { get; set; }
         public decimal Price { get; set; }
         public List<int> PastSales { get; set; } = new List<int>();
-        public bool IsLowStock => Quantity < 5; // Threshold for low stock
+        public bool IsLowStock => Quantity < Data.InventoryManager.LOW_STOCK_THRESHOLD;
 
         public Product()
         {

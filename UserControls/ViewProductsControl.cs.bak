@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Drawing;
@@ -21,9 +19,8 @@ namespace InventoryApp.UserControls
         private readonly Button btnSell;
         private readonly Button btnRestock;
         private Product? selectedProduct;
-        private readonly HashSet<int> shownLowStockAlerts = new HashSet<int>();
-
-        public ViewProductsControl(InventoryManager manager)
+        // Track which products we've already shown low stock alerts for
+        private readonly HashSet<int> shownLowStockAlerts = new HashSet<int>();        public ViewProductsControl(InventoryManager manager)
         {
             _dataService = new CsvDataService();
             _manager = manager;
@@ -36,14 +33,12 @@ namespace InventoryApp.UserControls
             var panel = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                RowCount = 4,  // Search, Top Buttons, Grid, Bottom Buttons
-                ColumnCount = 1,
-                Padding = new Padding(10)
+                RowCount = 3,  // Increased to add button row
+                ColumnCount = 1
             };
-            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));  // Search panel
-            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));  // Top buttons
-            panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100)); // Grid
-            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));  // Bottom buttons
+            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
             var searchPanel = new FlowLayoutPanel
             {
@@ -75,7 +70,6 @@ namespace InventoryApp.UserControls
             searchPanel.Controls.Add(lblSearch);
             searchPanel.Controls.Add(cmbSearchMode);
             searchPanel.Controls.Add(txtSearch);
-            searchPanel.Padding = new Padding(0, 10, 0, 10);
 
             // Add refresh button
             btnRefresh = new Button
@@ -116,29 +110,11 @@ namespace InventoryApp.UserControls
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
                 ReadOnly = true,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 BackgroundColor = Color.White,
                 BorderStyle = BorderStyle.None,
                 RowHeadersVisible = false,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                DefaultCellStyle = new DataGridViewCellStyle 
-                {
-                    Font = new Font("Segoe UI", 11F, FontStyle.Regular),
-                    Padding = new Padding(10, 5, 10, 5)
-                },
-                ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
-                {
-                    Font = new Font("Segoe UI", 11F, FontStyle.Bold),
-                    BackColor = Color.FromArgb(51, 51, 76),
-                    ForeColor = Color.White,
-                    Padding = new Padding(10, 8, 10, 8),
-                    WrapMode = DataGridViewTriState.False
-                },
-                RowTemplate = { Height = 35 },
-                AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
-                {
-                    BackColor = Color.FromArgb(245, 245, 250)
-                }
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect
             };
 
             gridProducts.DefaultCellStyle.SelectionBackColor = Color.FromArgb(51, 51, 76);
@@ -149,11 +125,10 @@ namespace InventoryApp.UserControls
             // Add action buttons panel at the bottom
             var bottomPanel = new FlowLayoutPanel
             {
-                Dock = DockStyle.Top,
+                Dock = DockStyle.Fill,
                 FlowDirection = FlowDirection.LeftToRight,
                 AutoSize = true,
-                Margin = new Padding(0, 10, 0, 0),
-                Padding = new Padding(0, 10, 0, 0)
+                Margin = new Padding(0, 10, 0, 0)
             };
 
             // Add sell button
@@ -195,9 +170,20 @@ namespace InventoryApp.UserControls
             // Wire up grid selection changed event
             gridProducts.SelectionChanged += GridProducts_SelectionChanged;
 
-            // Subscribe to inventory updates and reset alert tracking
+            // Subscribe to inventory updates and reset alert tracking when inventory changes
             _manager.InventoryUpdated += () => { LoadProducts(); shownLowStockAlerts.Clear(); };
             LoadProducts();
+
+            // Check initial products for low stock (only once per product)
+            foreach (var product in _manager.GetProducts().Where(p => p.IsLowStock))
+            {
+                if (!shownLowStockAlerts.Contains(product.Id))
+                {
+                    MessageBox.Show($"Warning: {product.Name} has low stock!\nOnly {product.Quantity} units remaining.", 
+                        "Low Stock Alert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    shownLowStockAlerts.Add(product.Id);
+                }
+            }
         }
 
         private void LoadProducts()
@@ -227,47 +213,39 @@ namespace InventoryApp.UserControls
                 Status = p.IsLowStock ? "Low Stock" : "OK"
             }).ToList();
 
-            // Configure column widths and styling
-            if (gridProducts.Columns["Id"] != null)
-                gridProducts.Columns["Id"].Width = 60;
-            if (gridProducts.Columns["Name"] != null)
-                gridProducts.Columns["Name"].Width = 200;
-            if (gridProducts.Columns["Category"] != null)
-                gridProducts.Columns["Category"].Width = 150;
-            if (gridProducts.Columns["Quantity"] != null)
-                gridProducts.Columns["Quantity"].Width = 100;
-            if (gridProducts.Columns["Price"] != null)
-            {
-                gridProducts.Columns["Price"].Width = 100;
-                gridProducts.Columns["Price"].DefaultCellStyle.Format = "C2";
-            }
             if (gridProducts.Columns["Status"] != null)
             {
-                gridProducts.Columns["Status"].Width = 100;
                 gridProducts.Columns["Status"].DefaultCellStyle.ForeColor = Color.Red;
             }
+        }
 
-            // Set column header text with proper spacing
-            foreach (DataGridViewColumn col in gridProducts.Columns)
+        private void btnDownload_Click(object? sender, EventArgs e)
+        {
+                var productsFile = _dataService.GetProductsFilePath();
+            if (!File.Exists(productsFile))
             {
-                col.HeaderText = col.HeaderText.PadRight(15);  // Add padding to header text
-                col.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
-                col.DefaultCellStyle.Alignment = col.Name == "Price" || col.Name == "Quantity" 
-                    ? DataGridViewContentAlignment.MiddleRight 
-                    : DataGridViewContentAlignment.MiddleLeft;
+                MessageBox.Show("No CSV data found yet.", "Download Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
 
-            // Check for new low stock alerts only
-            var lowStockProducts = products.Where(p => p.IsLowStock && !shownLowStockAlerts.Contains(p.Id)).ToList();
-            if (lowStockProducts.Any())
+            var dialog = new SaveFileDialog
             {
-                var message = "Warning: The following products have low stock:\n\n";
-                foreach (var product in lowStockProducts)
+                Filter = "CSV files (*.csv)|*.csv",
+                FileName = "products.csv",
+                Title = "Save Products CSV"
+            };
+
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                try
                 {
-                    message += $"• {product.Name}: {product.Quantity} units remaining\n";
-                    shownLowStockAlerts.Add(product.Id);
+                    File.Copy(productsFile, dialog.FileName, true);
+                    MessageBox.Show("File saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-                MessageBox.Show(message, "Low Stock Alert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error saving file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
@@ -278,7 +256,15 @@ namespace InventoryApp.UserControls
                 var row = gridProducts.SelectedRows[0];
                 var productId = (int)row.Cells["Id"].Value;
                 selectedProduct = _manager.GetProducts().FirstOrDefault(p => p.Id == productId);
-                btnSell.Enabled = btnRestock.Enabled = selectedProduct != null;
+                btnSell.Enabled = btnRestock.Enabled = (selectedProduct != null);
+
+                // Show low stock warning only if we haven't shown it yet for this product
+                if (selectedProduct?.Quantity < InventoryManager.LOW_STOCK_THRESHOLD && selectedProduct != null && !shownLowStockAlerts.Contains(selectedProduct.Id))
+                {
+                    MessageBox.Show($"Warning: {selectedProduct.Name} has low stock!\nOnly {selectedProduct.Quantity} units remaining.", 
+                        "Low Stock Alert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    shownLowStockAlerts.Add(selectedProduct.Id);
+                }
             }
             else
             {
@@ -299,6 +285,18 @@ namespace InventoryApp.UserControls
                 Text = "Sell Product",
                 StartPosition = FormStartPosition.CenterParent
             };
+
+            var panel = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 3,
+                Padding = new Padding(15),
+                Height = 120
+            };
+            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
             var lblQuantity = new Label
             {
@@ -345,18 +343,6 @@ namespace InventoryApp.UserControls
             };
             btnOk.FlatAppearance.BorderSize = 0;
 
-            var panel = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                ColumnCount = 1,
-                RowCount = 3,
-                Padding = new Padding(15),
-                Height = 120
-            };
-            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-
             buttonPanel.Controls.Add(btnCancel);
             buttonPanel.Controls.Add(btnOk);
 
@@ -376,12 +362,30 @@ namespace InventoryApp.UserControls
                 if (idx >= 0)
                 {
                     var productName = selectedProduct.Name; // Store name before update
+                    var currentQty = selectedProduct.Quantity;
                     if (_manager.UpdateStock(idx, qty))
                     {
-                        _manager.ReloadFromCsv(); // Force immediate reload
-                        LoadProducts(); // Refresh the grid
-                        selectedProduct = _manager.GetProducts().FirstOrDefault(p => p.Id == selectedProduct.Id);
+                        _manager.ReloadFromCsv();
+                        LoadProducts();
                         MessageBox.Show($"Sold {qty} units of {productName}.", "Sale Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Could not sell {qty} units of {productName}. Please verify the quantity.", 
+                            "Sale Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                            MessageBox.Show($"Sold {qty} units of {productName}.", "Sale Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Could not sell {qty} units of {productName}. Please verify the quantity.", 
+                            "Sale Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                        // UI will refresh via InventoryUpdated subscription, but force load to be safe
+                        LoadProducts();
+                        MessageBox.Show($"Sold {qty} units of {productName}.", "Sale Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        // Note: Don't need to show low stock here - GridProducts_SelectionChanged will handle that
                     }
                     else
                     {
@@ -408,6 +412,18 @@ namespace InventoryApp.UserControls
                 Text = "Restock Product",
                 StartPosition = FormStartPosition.CenterParent
             };
+
+            var panel = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 3,
+                Padding = new Padding(15),
+                Height = 120
+            };
+            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
             var lblQuantity = new Label
             {
@@ -454,18 +470,6 @@ namespace InventoryApp.UserControls
             };
             btnOk.FlatAppearance.BorderSize = 0;
 
-            var panel = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                ColumnCount = 1,
-                RowCount = 3,
-                Padding = new Padding(15),
-                Height = 120
-            };
-            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-
             buttonPanel.Controls.Add(btnCancel);
             buttonPanel.Controls.Add(btnOk);
 
@@ -490,36 +494,6 @@ namespace InventoryApp.UserControls
                 else
                 {
                     MessageBox.Show("Selected product not found in inventory manager.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-        }
-
-        private void btnDownload_Click(object? sender, EventArgs e)
-        {
-            var productsFile = _dataService.GetProductsFilePath();
-            if (!File.Exists(productsFile))
-            {
-                MessageBox.Show("No CSV data found yet.", "Download Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            var dialog = new SaveFileDialog
-            {
-                Filter = "CSV files (*.csv)|*.csv",
-                FileName = "products.csv",
-                Title = "Save Products CSV"
-            };
-
-            if (dialog.ShowDialog() == DialogResult.OK)
-            {
-                try
-                {
-                    File.Copy(productsFile, dialog.FileName, true);
-                    MessageBox.Show("File saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error saving file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }

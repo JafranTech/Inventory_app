@@ -1,4 +1,52 @@
 Id,Name,Category,Quantity,Price
-1,asus rog g16,electronics,9,10000
-2,lenovo loq,electronics,88,10000
-3,mouse,electronics,45,99
+1,iphone,mobile,30,10000
+2,Samsung Galaxy S23,Laptop,116,328.18
+3,iPhone 15 Pro,Smartphone,56,859.7
+4,Google Pixel 8,Laptop,0,2122.3
+5,OnePlus 12,Laptop,143,732.53
+6,Xiaomi 13T,Mouse,82,150.22
+7,Dell XPS 15,Smartphone,78,1119.67
+8,MacBook Air M3,Camera,110,1824.15
+9,HP Spectre x360,Headphones,91,2090.83
+10,Lenovo ThinkPad X1,Smartwatch,146,1039.27
+11,Asus ROG Zephyrus,Camera,164,646.12
+12,iPad Pro 12.9,Headphones,105,2044.31
+13,Samsung Galaxy Tab S9,Smartphone,85,628.61
+14,Microsoft Surface Pro 9,Headphones,139,501.33
+15,Lenovo Tab P12,Mouse,56,1890.55
+16,Amazon Fire HD 10,Laptop,64,1862.57
+17,Apple Watch Series 9,Smartphone,123,939.69
+18,Samsung Galaxy Watch 6,Keyboard,26,83.07
+19,Fitbit Versa 4,Mouse,166,299.91
+20,Garmin Venu 3,Camera,66,689.91
+21,Amazfit GTR 4,Camera,121,1848.46
+22,Sony WH-1000XM5,Smartwatch,54,1252.96
+23,Bose QuietComfort 45,Speaker,97,2359.99
+24,JBL Tune 760NC,Mouse,134,1161.6
+25,Sennheiser HD 450BT,Keyboard,163,1416.15
+26,Apple AirPods Pro,Tablet,14,1342.51
+27,Canon EOS R6,Smartphone,123,2001.88
+28,Nikon Z6 II,Monitor,132,85.46
+29,Sony Alpha a7 IV,Smartphone,45,1495.34
+30,Fujifilm X-T5,Monitor,188,938.36
+31,Panasonic Lumix S5,Monitor,135,277.66
+32,Dell UltraSharp 27,Smartwatch,106,1413.47
+33,LG UltraFine 5K,Camera,47,1911.67
+34,Samsung Odyssey G7,Monitor,25,1403.49
+35,ASUS ProArt 32,Keyboard,76,405.83
+36,BenQ PD2700U,Tablet,71,1900.47
+37,Logitech MX Keys,Smartphone,39,2450.06
+38,Corsair K95 RGB,Laptop,25,693.43
+39,Razer BlackWidow V4,Tablet,48,50.51
+40,SteelSeries Apex Pro,Smartwatch,47,340.0
+41,Redragon K552,Tablet,169,1277.54
+42,Logitech MX Master 3S,Smartphone,100,2239.72
+43,Razer DeathAdder V3,Monitor,24,1036.09
+44,Corsair Harpoon,Monitor,134,904.88
+45,SteelSeries Rival 600,Speaker,153,622.13
+46,HP Omen Reactor,Smartwatch,44,961.6
+47,JBL Flip 6,Camera,160,312.44
+48,Sony SRS-XE300,Monitor,127,1258.06
+49,Bose SoundLink Revolve II,Smartwatch,119,131.85
+50,Ultimate Ears Boom 3,Laptop,164,608.52
+51,Anker Soundcore Motion+,Keyboard,149,1780.54

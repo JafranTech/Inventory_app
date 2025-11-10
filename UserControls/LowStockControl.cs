@@ -10,12 +10,14 @@ namespace InventoryApp.UserControls
     public partial class LowStockControl : UserControl
     {
         private readonly CsvDataService _dataService;
+        private readonly InventoryApp.Data.InventoryManager _manager;
         private readonly DataGridView gridLowStock;
         private readonly Button btnRefresh;
-        
-        public LowStockControl()
+
+        public LowStockControl(InventoryApp.Data.InventoryManager manager)
         {
             _dataService = new CsvDataService();
+            _manager = manager ?? throw new ArgumentNullException(nameof(manager));
             
             // Initialize control
             this.Dock = DockStyle.Fill;
@@ -62,12 +64,14 @@ namespace InventoryApp.UserControls
             panel.Controls.Add(gridLowStock);
             this.Controls.Add(panel);
 
+            // subscribe to inventory updates so this list refreshes when inventory changes
+            _manager.InventoryUpdated += LoadLowStock;
             LoadLowStock();
         }
 
         private void LoadLowStock()
         {
-            var products = _dataService.LoadProducts()
+            var products = _manager.GetProducts()
                 .Where(p => p.IsLowStock)
                 .Select(p => new
                 {

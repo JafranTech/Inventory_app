@@ -180,7 +180,7 @@ namespace InventoryApp.Forms
 
         private void LoadViewProductsContent()
         {
-            var view = new UserControls.ViewProductsControl();
+            var view = new UserControls.ViewProductsControl(_inventoryManager);
             view.Dock = DockStyle.Fill;
             ClearContentPanel();
             this.contentPanel.Controls.Add(view);
@@ -188,7 +188,7 @@ namespace InventoryApp.Forms
 
         private void LoadLowStockContent()
         {
-            var low = new UserControls.LowStockControl();
+            var low = new UserControls.LowStockControl(_inventoryManager);
             low.Dock = DockStyle.Fill;
             ClearContentPanel();
             this.contentPanel.Controls.Add(low);
@@ -196,7 +196,7 @@ namespace InventoryApp.Forms
 
         private void LoadSoldProductsContent()
         {
-            var sold = new UserControls.SoldProductsControl();
+            var sold = new UserControls.SoldProductsControl(_inventoryManager);
             sold.Dock = DockStyle.Fill;
             ClearContentPanel();
             this.contentPanel.Controls.Add(sold);
